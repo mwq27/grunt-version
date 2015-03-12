@@ -29,7 +29,8 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "semver": "^4.0.0"
+    "semver": "^4.0.0",
+    "moment": "*"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.1.1",
