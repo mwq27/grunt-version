@@ -7,14 +7,16 @@
  */
 
 'use strict';
-
+var moment = require('moment');
 module.exports = function(grunt) {
 
   grunt.registerMultiTask('version', 'Update version number in all the files.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
       prefix: '[^\\-]version[\'"]?\\s*[:=]\\s*[\'"]',
+      prefixDate: '[^\\-]buildDate[\'"]?\\s*[:=]\\s*[\'"]',
       replace: '[0-9a-zA-Z\\-_\\+\\.]+',
+      replaceDate: '[0-9a-zA-Z\\-_\\+\\/]+',
       pkg: 'package.json',
       release: ''
     });
@@ -39,6 +41,7 @@ module.exports = function(grunt) {
     }
 
     var newVersion,
+        buildDate,
         release = this.args && this.args[0] || options.release,
         semver = require('semver'),
         version = options.pkg.version,
@@ -54,6 +57,7 @@ module.exports = function(grunt) {
     }
 
     version = newVersion || version;
+    buildDate = moment().format('MM/DD/YYYY');
 
     this.filesSrc.forEach(function(filepath) {
       // Warn if a source file/pattern was invalid.
@@ -66,7 +70,8 @@ module.exports = function(grunt) {
         file: grunt.file.read(filepath),
         filePath: filepath,
         version: version,
-        pattern: new RegExp('(' + options.prefix + ')(' + options.replace + ')', 'g')
+        pattern: new RegExp('(' + options.prefix + ')(' + options.replace + ')', 'g'),
+        patternDate: new RegExp('(' + options.prefixDate + ')(' + options.replaceDate + ')', 'g'),
       };
       var newfile,
           matches = fileInfo.pattern.exec(fileInfo.file);
@@ -80,7 +85,7 @@ module.exports = function(grunt) {
           log('skipped', fileInfo);
         } else {
           log('updated', fileInfo);
-          newfile = fileInfo.file.replace(fileInfo.pattern, '$1' + version);
+          newfile = fileInfo.file.replace(fileInfo.pattern, '$1' + version).replace(fileInfo.patternDate, '$1' + buildDate);
           grunt.file.write(filepath, newfile);
         }
       }
